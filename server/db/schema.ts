@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, bigint, varchar, timestamp, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, uuid, text, bigint, varchar, timestamp, jsonb, index } from "drizzle-orm/pg-core";
 
 export const tenants = pgTable("tenants", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -9,9 +9,9 @@ export const tenants = pgTable("tenants", {
 export const users = pgTable("users", {
   id: uuid("id").defaultRandom().primaryKey(),
   tenantId: uuid("tenant_id")
-    .notNull()
     .references(() => tenants.id),
   email: text("email").notNull().unique(),
+  passwordHash: text("password_hash"),
   name: text("name").notNull(),
   role: text("role").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
@@ -82,6 +82,16 @@ export const reconciliationRuns = pgTable("reconciliation_runs", {
   totalAmountMinor: bigint("total_amount_minor", { mode: "bigint" }),
   matchedAmountMinor: bigint("matched_amount_minor", { mode: "bigint" }),
   unmatchedAmountMinor: bigint("unmatched_amount_minor", { mode: "bigint" }),
+  
+  // Background Worker Fields
+  progressPercentage: bigint("progress_percentage", { mode: "number" }).default(0),
+  currentStep: text("current_step"),
+  processedRecords: bigint("processed_records", { mode: "number" }).default(0),
+  errorInformation: text("error_information"),
+}, (table) => {
+  return {
+    tenantStartedIdx: index("reconciliation_runs_tenant_started_idx").on(table.tenantId, table.startedAt),
+  };
 });
 
 export const reconciliationMatches = pgTable("reconciliation_matches", {
@@ -102,6 +112,12 @@ export const reconciliationMatches = pgTable("reconciliation_matches", {
   referenceScore: text("reference_score"),
   descriptionScore: text("description_score"),
   reason: text("reason"),
+  aiDecision: text("ai_decision"),
+  aiConfidence: text("ai_confidence"),
+  aiEvidence: jsonb("ai_evidence"),
+  aiReasonCodes: jsonb("ai_reason_codes"),
+  aiModel: text("ai_model"),
+  aiTimestamp: timestamp("ai_timestamp", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
@@ -137,5 +153,39 @@ export const exceptions = pgTable("exceptions", {
   resolvedBy: uuid("resolved_by").references(() => users.id),
   resolvedAt: timestamp("resolved_at", { withTimezone: true }),
   resolutionNote: text("resolution_note"),
+  aiDecision: text("ai_decision"),
+  aiConfidence: text("ai_confidence"),
+  aiEvidence: jsonb("ai_evidence"),
+  aiReasonCodes: jsonb("ai_reason_codes"),
+  aiModel: text("ai_model"),
+  aiTimestamp: timestamp("ai_timestamp", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
+
+export const cashSnapshots = pgTable("cash_snapshots", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  tenantId: uuid("tenant_id")
+    .notNull()
+    .references(() => tenants.id),
+  snapshotDate: timestamp("snapshot_date", { withTimezone: true }).notNull(),
+  openingBalanceMinor: bigint("opening_balance_minor", { mode: "bigint" }).notNull(),
+  expectedInflowsMinor: bigint("expected_inflows_minor", { mode: "bigint" }).notNull(),
+  expectedOutflowsMinor: bigint("expected_outflows_minor", { mode: "bigint" }).notNull(),
+  actualBalanceMinor: bigint("actual_balance_minor", { mode: "bigint" }),
+  varianceMinor: bigint("variance_minor", { mode: "bigint" }),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+}, (table) => {
+  return {
+    tenantDateIdx: index("cash_snapshots_tenant_date_idx").on(table.tenantId, table.snapshotDate),
+  };
+});
+
+import { relations } from "drizzle-orm";
+
+export const exceptionsRelations = relations(exceptions, ({ one }) => ({
+  transaction: one(transactions, {
+    fields: [exceptions.transactionId],
+    references: [transactions.id],
+  }),
+}));
+
