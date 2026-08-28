@@ -3,37 +3,44 @@ import { z } from "zod";
 export const AgentDecisionSchema = z.object({
   decision: z.enum(["MATCH", "REVIEW", "UNMATCHED"]),
   confidence: z.number().min(0).max(1),
-  reasonCodes: z.array(z.string()),
+  reason_codes: z.array(z.string()),
+  evidence: z.array(z.string()),
   explanation: z.string(),
   candidateId: z.string().optional(),
 });
 
 export type AgentDecision = z.infer<typeof AgentDecisionSchema>;
 
-// GenAI structured output schema format
+// Standard structured output JSON schema format
 export const agentDecisionGenAiSchema = {
-  type: "OBJECT",
+  type: "object",
   properties: {
     decision: {
-      type: "STRING",
+      type: "string",
       enum: ["MATCH", "REVIEW", "UNMATCHED"]
     },
     confidence: {
-      type: "NUMBER",
+      type: "number",
     },
-    reasonCodes: {
-      type: "ARRAY",
+    reason_codes: {
+      type: "array",
       items: {
-        type: "STRING"
+        type: "string"
+      }
+    },
+    evidence: {
+      type: "array",
+      items: {
+        type: "string"
       }
     },
     explanation: {
-      type: "STRING"
+      type: "string"
     },
     candidateId: {
-      type: "STRING",
+      type: "string",
       nullable: true
     }
   },
-  required: ["decision", "confidence", "reasonCodes", "explanation"]
+  required: ["decision", "confidence", "reason_codes", "evidence", "explanation"]
 };
