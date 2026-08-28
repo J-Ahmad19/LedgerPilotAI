@@ -1,34 +1,47 @@
 import { Request, Response } from "express";
 import { reconciliationService } from "../services/reconciliation.service.js";
 
-export async function startReconciliationRun(req: Request, res: Response) {
+import { AuthRequest } from "../middleware/auth.js";
+
+
+export async function startReconciliationRun(req: AuthRequest, res: Response) {
   try {
-    const tenantId = req.body.tenantId;
+    const tenantId = req.tenantId;
 
     if (!tenantId) {
       return res.status(400).json({ error: "Missing tenantId" });
     }
 
-    // PDF 23: Large reconciliation jobs should not block HTTP request.
-    // For buildathon, an in-process worker is acceptable.
-    // We return immediately or await if it's fast enough. Let's run asynchronously and return runId immediately.
-    
-    // In a real app we'd dispatch to a queue (like BullMQ).
-    // Here we'll just run it asynchronously in the background.
-    reconciliationService.runReconciliation(tenantId).catch(console.error);
+    const result = await reconciliationService.runReconciliation(tenantId);
 
-    res.json({ success: true, message: "Reconciliation run started in the background." });
+    res.json({ success: true, message: "Reconciliation run queued in the background.", runId: result.runId });
   } catch (error: any) {
     console.error("Reconciliation error:", error);
     res.status(500).json({ error: error.message || "Internal server error" });
   }
 }
 
-export async function getRuns(req: Request, res: Response) {
+export async function cancelReconciliationRun(req: AuthRequest, res: Response) {
   try {
-    const tenantId = req.query.tenantId as string;
+    const tenantId = req.tenantId;
+    const runId = req.params.id;
     if (!tenantId) {
-      return res.status(400).json({ error: "Missing tenantId query param" });
+      return res.status(400).json({ error: "Missing tenantId" });
+    }
+
+    const result = await reconciliationService.cancelRun(runId, tenantId);
+    res.json(result);
+  } catch (error: any) {
+    console.error("Cancellation error:", error);
+    res.status(400).json({ error: error.message || "Bad Request" });
+  }
+}
+
+export async function getRuns(req: AuthRequest, res: Response) {
+  try {
+    const tenantId = req.tenantId;
+    if (!tenantId) {
+      return res.status(400).json({ error: "Missing tenantId" });
     }
     const runs = await reconciliationService.getRuns(tenantId);
     res.json({ runs });
@@ -46,6 +59,21 @@ export async function getRunDetails(req: Request, res: Response) {
     }
     res.json({ run });
   } catch (error: any) {
+    res.status(500).json({ error: error.message || "Internal server error" });
+  }
+}
+
+export async function getRunTransactions(req: Request, res: Response) {
+  try {
+    const runId = req.params.id;
+    const status = req.query.status as string || 'ALL';
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 50;
+    
+    const transactions = await reconciliationService.getRunTransactions(runId, status, page, limit);
+    res.json(transactions);
+  } catch (error: any) {
+    console.error("Error fetching run transactions:", error);
     res.status(500).json({ error: error.message || "Internal server error" });
   }
 }

@@ -22,9 +22,9 @@ export class IngestionService {
   }
 
   private async processRecords(tenantId: string, dataSourceId: string, records: any[]) {
-    let validCount = 0;
+    const rawToInsert: any[] = [];
+    const txToInsert: any[] = [];
     let errorCount = 0;
-    let duplicateCount = 0;
 
     for (const record of records) {
       try {
@@ -43,16 +43,14 @@ export class IngestionService {
           transactionDate
         );
 
-        // Insert Raw Payload
-        await db.insert(rawTransactions).values({
+        rawToInsert.push({
           tenantId,
           dataSourceId,
           externalId: parsed.externalId,
           rawPayload: record,
         });
 
-        // Insert Normalized Transaction
-        const insertResult = await db.insert(transactions).values({
+        txToInsert.push({
           tenantId,
           sourceId: dataSourceId,
           externalId: parsed.externalId,
@@ -69,24 +67,38 @@ export class IngestionService {
           normalizedDescription: normalizeString(parsed.description),
           status: parsed.status,
           transactionHash: hash,
-        }).onConflictDoNothing({ target: transactions.transactionHash });
-
-        if (insertResult.rowCount === 0) {
-          duplicateCount++;
-        } else {
-          validCount++;
-        }
+        });
       } catch (err) {
-        console.error("Error processing record:", record, err);
+        console.error("Error validating/normalizing record:", record, err);
         errorCount++;
+      }
+    }
+
+    let processedCount = 0;
+
+    if (rawToInsert.length > 0) {
+      try {
+        // Bulk insert raw payload
+        await db.insert(rawTransactions).values(rawToInsert);
+        
+        // Bulk insert normalized transactions
+        const insertResult = await db.insert(transactions)
+          .values(txToInsert)
+          .onConflictDoNothing({ target: transactions.transactionHash });
+          
+        processedCount = insertResult.rowCount || 0;
+      } catch (err) {
+        console.error("Error in bulk insert:", err);
+        // Fallback to erroring all if bulk fails?
+        errorCount += rawToInsert.length;
       }
     }
 
     return {
       total: records.length,
-      processed: validCount,
+      processed: processedCount,
       errors: errorCount,
-      duplicates: duplicateCount,
+      duplicates: rawToInsert.length - processedCount,
     };
   }
 }

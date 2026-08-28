@@ -1,12 +1,14 @@
 import { Request, Response } from "express";
 import { financeAgent } from "../agents/finance-agent.js";
+import { AuthRequest } from "../middleware/auth.js";
 
-export async function queryAgent(req: Request, res: Response) {
+export async function queryAgent(req: AuthRequest, res: Response) {
   try {
-    const { query, tenantId } = req.body;
+    const tenantId = req.tenantId;
+    const { query } = req.body;
 
-    if (!query || !tenantId) {
-      return res.status(400).json({ error: "Missing query or tenantId" });
+    if (!tenantId || !query) {
+      return res.status(400).json({ error: "Missing tenantId or query" });
     }
 
     const response = await financeAgent.queryAssistant(query, tenantId);
