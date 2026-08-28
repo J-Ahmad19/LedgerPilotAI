@@ -55,9 +55,9 @@ export default function Footer() {
   }, []);
 
   return (
-    <footer ref={footerRef} className="relative border-t border-white/[0.04]">
+    <footer ref={footerRef} className="relative border-t border-charm-border bg-charm-band">
       {/* Gradient line at top */}
-      <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-ledger-blue/30 to-transparent" />
+      <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-charm-brand/20 to-transparent" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 lg:py-18">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 lg:gap-12 mb-12">
@@ -70,15 +70,15 @@ export default function Footer() {
               className="mb-5"
             >
               <a href="#" className="flex items-center gap-2.5 group">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-ledger-blue to-ledger-emerald flex items-center justify-center shadow-lg">
-                  <span className="text-white font-bold text-sm">L</span>
+                <div className="w-9 h-9 rounded-xl bg-brand-gradient flex items-center justify-center shadow-brand">
+                  <span className="text-white font-bold text-sm font-display">L</span>
                 </div>
-                <span className="text-lg font-bold tracking-tight">
-                  Ledger<span className="text-ledger-blue-glow">Pilot</span>AI
+                <span className="text-lg font-bold tracking-tight text-charm-heading font-display">
+                  Ledger<span className="text-charm-brand">Pilot</span>AI
                 </span>
               </a>
             </motion.div>
-            <p className="text-sm text-slate-500/80 mb-6 max-w-[240px] leading-relaxed">
+            <p className="text-sm text-charm-muted mb-6 max-w-[240px] leading-relaxed">
               Automated financial reconciliation powered by deterministic matching and AI.
             </p>
             <div className="flex items-center gap-3">
@@ -87,7 +87,7 @@ export default function Footer() {
                   key={social.label}
                   href={social.href}
                   aria-label={social.label}
-                  className="w-9 h-9 rounded-xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center text-slate-500 hover:text-white hover:bg-white/[0.08] hover:border-white/[0.12] transition-all duration-300"
+                  className="w-9 h-9 rounded-xl bg-white border border-charm-border flex items-center justify-center text-charm-muted hover:text-charm-brand hover:border-charm-brand shadow-sm transition-all duration-300"
                 >
                   <social.icon className="w-4 h-4" />
                 </a>
@@ -98,13 +98,13 @@ export default function Footer() {
           {/* Link Columns */}
           {Object.entries(footerLinks).map(([category, links]) => (
             <div key={category} className="footer-col">
-              <h4 className="text-sm font-semibold text-white mb-4 capitalize">{category}</h4>
+              <h4 className="text-sm font-semibold text-charm-heading mb-4 capitalize">{category}</h4>
               <ul className="space-y-3">
                 {links.map((link) => (
                   <li key={link.name}>
                     <a
                       href={link.href}
-                      className="text-sm text-slate-500/80 hover:text-white transition-colors duration-200"
+                      className="text-sm text-charm-muted hover:text-charm-brand transition-colors duration-200"
                     >
                       {link.name}
                     </a>
@@ -116,15 +116,15 @@ export default function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="pt-8 border-t border-white/[0.04] flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-sm text-slate-600">
+        <div className="pt-8 border-t border-charm-border flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-sm text-charm-muted">
             &copy; {new Date().getFullYear()} LedgerPilotAI. All rights reserved.
           </p>
           <div className="flex items-center gap-4">
-            <span className="text-xs px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400/80 font-medium">
+            <span className="text-xs px-3 py-1.5 rounded-full bg-white border border-charm-border text-charm-muted font-medium shadow-sm">
               SOC 2 Type II
             </span>
-            <span className="text-xs px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400/80 font-medium">
+            <span className="text-xs px-3 py-1.5 rounded-full bg-white border border-charm-border text-charm-muted font-medium shadow-sm">
               GDPR Compliant
             </span>
           </div>

@@ -92,10 +92,10 @@ export default function SocialProof() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-          className="relative glass-card border-white/[0.06] p-10 lg:p-14 overflow-hidden"
+          className="relative charm-panel border-charm-border p-10 lg:p-14 overflow-hidden"
         >
           {/* Gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-r from-ledger-blue/[0.03] via-ledger-emerald/[0.02] to-ledger-violet/[0.03] rounded-2xl" />
+          <div className="absolute inset-0 bg-charm-band opacity-50 rounded-3xl" />
 
           {/* Decorative corner accents */}
           <div className="absolute top-0 left-0 w-24 h-24 border-l-2 border-t-2 border-ledger-blue/10 rounded-tl-2xl" />
@@ -103,16 +103,16 @@ export default function SocialProof() {
 
           <div className="relative z-10 text-center">
             {/* Shield */}
-            <div className="shield-icon inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-ledger-blue/15 to-ledger-emerald/10 border border-white/[0.08] mb-8">
-              <Shield className="w-9 h-9 text-ledger-blue-glow" />
+            <div className="shield-icon inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-white shadow-sm border border-charm-border mb-8">
+              <Shield className="w-9 h-9 text-charm-heading" />
             </div>
 
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight mb-4">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight mb-4 text-charm-heading font-display">
               Built for scale and{' '}
-              <span className="text-gradient-emerald">accuracy</span>
+              <span className="text-charm-brand">accuracy</span>
             </h2>
 
-            <p className="text-lg text-slate-400/80 max-w-2xl mx-auto mb-12">
+            <p className="text-lg text-charm-muted max-w-2xl mx-auto mb-12">
               Bank-grade security with strict role-based access and immutable audit logs.
             </p>
 
@@ -120,10 +120,10 @@ export default function SocialProof() {
               {trustItems.map((item, index) => (
                 <div
                   key={item.text}
-                  className="trust-item flex items-center gap-4 text-slate-300 group cursor-default"
+                  className="trust-item flex items-center gap-4 text-charm-body group cursor-default"
                 >
-                  <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${item.gradient} border ${item.borderColor} flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
-                    <item.icon className={`w-5 h-5 ${item.iconColor}`} />
+                  <div className={`w-12 h-12 rounded-xl bg-white border border-charm-border flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-sm`}>
+                    <item.icon className={`w-5 h-5 text-charm-heading`} />
                   </div>
                   <span className="font-semibold text-[15px]">{item.text}</span>
                 </div>

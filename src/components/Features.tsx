@@ -102,18 +102,14 @@ function FeatureCard({ feature, index }: { feature: FeatureData; index: number }
       <div className="absolute -inset-[1px] rounded-3xl bg-gradient-to-b from-white/[0.08] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
       <div
-        className="relative glass-card p-8 lg:p-10 h-full hover:border-white/[0.12] transition-all duration-500"
-        style={{ boxShadow: 'none' }}
+        className="relative charm-panel p-8 lg:p-10 h-full hover:border-charm-brand transition-all duration-500"
         onMouseEnter={(e) => {
           const card = e.currentTarget;
-          (card as HTMLElement).style.boxShadow = feature.glowColor;
         }}
         onMouseLeave={(e) => {
-          (e.currentTarget as HTMLElement).style.boxShadow = 'none';
         }}
       >
-        {/* Gradient background overlay */}
-        <div className={`absolute inset-0 rounded-3xl bg-gradient-to-br ${feature.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
+        <div className={`absolute inset-0 rounded-3xl bg-charm-band opacity-0 group-hover:opacity-10 transition-opacity duration-500`} />
 
         <div className="relative z-10">
           {/* Icon */}
@@ -124,15 +120,15 @@ function FeatureCard({ feature, index }: { feature: FeatureData; index: number }
           </div>
 
           {/* Title */}
-          <h3 className="text-xl font-bold text-white mb-3 group-hover:text-gradient-primary transition-all duration-300">
+          <h3 className="text-xl font-bold text-charm-heading mb-3 group-hover:text-charm-brand transition-all duration-300">
             {feature.title}
           </h3>
 
           {/* Description */}
-          <p className="text-slate-400/90 leading-relaxed text-[15px]">{feature.description}</p>
+          <p className="text-charm-muted leading-relaxed text-[15px]">{feature.description}</p>
 
           {/* Bottom accent line */}
-          <div className="mt-8 h-[2px] w-0 group-hover:w-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-all duration-700" />
+          <div className="mt-8 h-[2px] w-0 group-hover:w-full bg-charm-brand transition-all duration-700" />
         </div>
       </div>
     </motion.div>
@@ -169,7 +165,7 @@ export default function Features() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm font-semibold mb-6 uppercase tracking-wider"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-charm-border text-charm-heading shadow-sm text-sm font-semibold mb-6 uppercase tracking-wider"
           >
             Core Features
           </motion.div>
@@ -179,20 +175,20 @@ export default function Features() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight mb-5"
+            className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight mb-5 text-charm-heading font-display"
           >
             Everything you need to reconcile{' '}
-            <span className="text-gradient-primary">faster and smarter</span>
+            <span className="text-charm-brand">faster and smarter</span>
           </motion.h2>
 
-          <div className="features-title-line h-[2px] w-24 mx-auto bg-gradient-to-r from-ledger-blue to-ledger-emerald mb-5 origin-center" />
+          <div className="features-title-line h-[2px] w-24 mx-auto bg-charm-brand mb-5 origin-center" />
 
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-lg text-slate-400/80 max-w-2xl mx-auto"
+            className="text-lg text-charm-muted max-w-2xl mx-auto"
           >
             Powerful automation meets intelligent AI to transform your financial operations.
           </motion.p>

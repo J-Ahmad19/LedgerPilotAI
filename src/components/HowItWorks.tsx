@@ -92,7 +92,7 @@ export default function HowItWorks() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-sm font-semibold mb-6 uppercase tracking-wider"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-charm-border text-charm-heading shadow-sm text-sm font-semibold mb-6 uppercase tracking-wider"
           >
             How It Works
           </motion.div>
@@ -102,10 +102,10 @@ export default function HowItWorks() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight mb-5"
+            className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight mb-5 text-charm-heading font-display"
           >
             Three steps to{' '}
-            <span className="text-gradient-emerald">automated reconciliation</span>
+            <span className="text-charm-brand">automated reconciliation</span>
           </motion.h2>
 
           <motion.p
@@ -113,7 +113,7 @@ export default function HowItWorks() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-lg text-slate-400/80 max-w-2xl mx-auto"
+            className="text-lg text-charm-muted max-w-2xl mx-auto"
           >
             Get started in minutes. No complex setup required.
           </motion.p>
@@ -121,17 +121,16 @@ export default function HowItWorks() {
 
         {/* Steps */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12 relative">
-          {/* Animated Connector */}
           <div className="hidden md:block absolute top-[60px] left-[16.67%] right-[16.67%] h-[2px] -translate-y-1/2">
             <div
               ref={connectorRef}
               className="w-full h-full origin-left"
               style={{
-                background: 'linear-gradient(90deg, rgba(37,99,235,0.3), rgba(16,185,129,0.3), rgba(139,92,246,0.3))',
+                background: '#E7E6E5',
               }}
             />
             {/* Moving dot */}
-            <div className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-white/40" style={{ animation: 'shimmerBar 4s ease-in-out infinite' }} />
+            <div className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-charm-brand" style={{ animation: 'shimmerBar 4s ease-in-out infinite' }} />
           </div>
 
           {steps.map((step, index) => (
@@ -159,8 +158,8 @@ export default function HowItWorks() {
               </div>
 
               {/* Content */}
-              <h3 className="text-xl font-bold text-white mb-3">{step.title}</h3>
-              <p className="text-slate-400/80 max-w-[240px] mx-auto text-[15px] leading-relaxed">{step.description}</p>
+              <h3 className="text-xl font-bold text-charm-heading mb-3">{step.title}</h3>
+              <p className="text-charm-muted max-w-[240px] mx-auto text-[15px] leading-relaxed">{step.description}</p>
 
               {/* Bottom accent */}
               <div className={`mt-6 h-[2px] w-0 group-hover:w-16 mx-auto bg-gradient-to-r ${step.gradient} transition-all duration-500`} />
