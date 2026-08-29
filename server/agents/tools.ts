@@ -19,19 +19,26 @@ export async function getTransactionsTool(args: any) {
 }
 
 export async function findCandidatesTool(args: any) {
-  const { transactionId } = args;
-  // Get the transaction first
+  const { transactionId, tenantId } = args;
+  // Get the transaction first and ensure it belongs to the tenant
   const [tx] = await db.query.transactions.findMany({
-    where: eq(transactions.id, transactionId)
+    where: and(eq(transactions.id, transactionId), eq(transactions.tenantId, tenantId))
   });
-  if (!tx) return { error: "Transaction not found" };
+  if (!tx) return { error: "Transaction not found or access denied" };
 
   const candidates = await findCandidates(tx);
   return candidates;
 }
 
 export async function getExceptionsTool(args: any) {
-  const { runId, limit = 10 } = args;
+  const { runId, limit = 10, tenantId } = args;
+  
+  // Verify runId belongs to tenant
+  const [run] = await db.query.reconciliationRuns.findMany({
+    where: and(eq(reconciliationRuns.id, runId), eq(reconciliationRuns.tenantId, tenantId))
+  });
+  if (!run) return { error: "Run not found or access denied" };
+
   return await db.query.exceptions.findMany({
     where: eq(exceptions.runId, runId),
     limit

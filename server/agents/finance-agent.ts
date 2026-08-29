@@ -1,6 +1,7 @@
 import Groq from "groq-sdk";
 import { AgentDecisionSchema, AgentDecision, agentDecisionGenAiSchema } from "./schema.js";
 import { financeTools, toolImplementations } from "./tools.js";
+import { metrics } from "../utils/metrics.js";
 
 // Ensure the API key is available
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY || "dummy_key" });
@@ -10,6 +11,9 @@ export class FinanceAgent {
    * Evaluates an ambiguous match (REVIEW state) and decides whether to MATCH or UNMATCH.
    */
   async evaluateAmbiguousMatch(sourceTx: any, candidates: any[]): Promise<AgentDecision> {
+    const startTime = Date.now();
+    metrics.event('ai_inference_started', { task: 'evaluateAmbiguousMatch', sourceTxId: sourceTx.id });
+
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 10000); // 10s timeout
 
@@ -61,10 +65,21 @@ export class FinanceAgent {
         }
       }
 
+      const durationMs = Date.now() - startTime;
+      metrics.log({
+        name: 'ai_usage',
+        value: 1,
+        tags: { task: 'evaluateAmbiguousMatch', result: decision.decision, tenantId: sourceTx.tenantId }
+      });
+      metrics.event('ai_inference_completed', { task: 'evaluateAmbiguousMatch', sourceTxId: sourceTx.id, durationMs, tenantId: sourceTx.tenantId });
+
       return decision;
 
     } catch (error: any) {
       clearTimeout(timeout);
+      metrics.error('ai_inference_failed', error, { task: 'evaluateAmbiguousMatch', sourceTxId: sourceTx.id, tenantId: sourceTx.tenantId });
+      metrics.log({ name: 'ai_failure_rate', value: 1, tags: { task: 'evaluateAmbiguousMatch', tenantId: sourceTx.tenantId }});
+      
       console.error("AI Evaluation failed:", error);
       // Fallback
       return {
@@ -107,6 +122,9 @@ export class FinanceAgent {
    * Natural Language Assistant for querying financial data using tools.
    */
   async queryAssistant(query: string, tenantId: string): Promise<string> {
+    const startTime = Date.now();
+    metrics.event('ai_inference_started', { task: 'queryAssistant', tenantId });
+
     try {
       const systemInstruction = `You are a helpful AI Finance Assistant. 
       You help finance operators understand their reconciliation runs, cash position, and exceptions.
@@ -154,7 +172,11 @@ export class FinanceAgent {
         for (const call of responseMessage.tool_calls) {
           const functionName = call.function.name;
           const args = JSON.parse(call.function.arguments);
+          // SECURITY ENFORCEMENT: Override LLM's tenantId with the authenticated user's tenantId
+          args.tenantId = tenantId;
           
+          metrics.event('ai_tool_call', { functionName, tenantId });
+
           if (toolImplementations[functionName]) {
             try {
               const apiResponse = await toolImplementations[functionName](args);
@@ -184,8 +206,19 @@ export class FinanceAgent {
         responseMessage = response.choices[0].message;
       }
 
+      const durationMs = Date.now() - startTime;
+      metrics.log({
+        name: 'ai_usage',
+        value: 1,
+        tags: { task: 'queryAssistant' }
+      });
+      metrics.event('ai_inference_completed', { task: 'queryAssistant', tenantId, durationMs });
+
       return responseMessage.content || "I'm sorry, I couldn't generate a response.";
-    } catch (error) {
+    } catch (error: any) {
+      metrics.error('ai_inference_failed', error, { task: 'queryAssistant', tenantId });
+      metrics.log({ name: 'ai_failure_rate', value: 1, tags: { task: 'queryAssistant' }});
+      
       console.error("Assistant Query failed:", error);
       return "An error occurred while processing your request.";
     }
