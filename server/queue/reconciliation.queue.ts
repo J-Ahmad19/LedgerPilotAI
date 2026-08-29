@@ -7,6 +7,7 @@ import { findCandidates } from '../matching/candidate-generator.js';
 import { calculateCompositeScore } from '../matching/scoring.js';
 import { financeAgent } from '../agents/finance-agent.js';
 import Redis from 'ioredis';
+import { metrics } from '../utils/metrics.js';
 
 const REDIS_URL = process.env.REDIS_URL || 'redis://localhost:6379';
 const connection = new Redis(REDIS_URL, { maxRetriesPerRequest: null });
@@ -15,6 +16,9 @@ export const reconciliationQueue = new Queue('ReconciliationQueue', { connection
 
 async function processReconciliationJob(job: Job) {
   const { runId, tenantId } = job.data;
+  const startTime = Date.now();
+
+  metrics.event('worker_job_started', { runId, tenantId, jobId: job.id });
 
   try {
     await db.update(reconciliationRuns).set({
@@ -81,7 +85,7 @@ async function processReconciliationJob(job: Job) {
           .from(reconciliationRuns).where(eq(reconciliationRuns.id, runId));
         
         if (currentRunState?.status === 'CANCELLED') {
-          console.log(`Run ${runId} was cancelled by user. Aborting gracefully.`);
+          metrics.event('worker_job_cancelled', { runId, tenantId, jobId: job.id });
           return { success: false, message: 'Run cancelled by user' };
         }
 
@@ -221,7 +225,7 @@ async function processReconciliationJob(job: Job) {
           }
         } else {
           // REVIEW or UNMATCHED fallback from AI
-          await db.insert(exceptions).values({
+          const [insertedException] = await db.insert(exceptions).values({
             runId,
             transactionId: sourceTx.id,
             type: "AMBIGUOUS_MATCH",
@@ -236,11 +240,20 @@ async function processReconciliationJob(job: Job) {
             aiReasonCodes: aiResult.reason_codes,
             aiModel: process.env.LLM_MODEL_NAME || "llama-3.1-8b-instant",
             aiTimestamp: new Date(),
-          });
+          }).returning();
     
           await db.update(transactions)
             .set({ status: "REVIEW", updatedAt: new Date() })
             .where(eq(transactions.id, sourceTx.id));
+            
+          await db.insert(auditLogs).values({
+            tenantId,
+            actorType: "Agent",
+            action: "EXCEPTION_CREATED",
+            entityType: "Exception",
+            entityId: insertedException.id,
+            metadata: { type: "AMBIGUOUS_MATCH", sourceTxId: sourceTx.id }
+          });
     
           reviewRecords++;
           unmatchedAmount += sourceTx.amountMinor;
@@ -250,7 +263,7 @@ async function processReconciliationJob(job: Job) {
 
       } else {
         // UNMATCHED (Exception)
-        await db.insert(exceptions).values({
+        const [insertedException] = await db.insert(exceptions).values({
           runId,
           transactionId: sourceTx.id,
           type: "MISSING_COUNTERPART",
@@ -259,6 +272,15 @@ async function processReconciliationJob(job: Job) {
           reason: "No suitable counterpart found",
           status: "OPEN",
           suggestedAction: "Manual investigation required",
+        }).returning();
+
+        await db.insert(auditLogs).values({
+          tenantId,
+          actorType: "System",
+          action: "EXCEPTION_CREATED",
+          entityType: "Exception",
+          entityId: insertedException.id,
+          metadata: { type: "MISSING_COUNTERPART", sourceTxId: sourceTx.id }
         });
 
         unmatchedRecords++;
@@ -272,7 +294,7 @@ async function processReconciliationJob(job: Job) {
       ? ((matchedRecords / totalRecords) * 100).toFixed(2) 
       : "0.00";
 
-    await db.update(reconciliationRuns).set({
+    const [completedRun] = await db.update(reconciliationRuns).set({
       status: 'COMPLETED',
       completedAt: new Date(),
       progressPercentage: 100,
@@ -285,12 +307,56 @@ async function processReconciliationJob(job: Job) {
       totalAmountMinor: totalAmount,
       matchedAmountMinor: matchedAmount,
       unmatchedAmountMinor: unmatchedAmount,
-    }).where(eq(reconciliationRuns.id, runId));
+    }).where(eq(reconciliationRuns.id, runId)).returning();
+
+    await db.insert(auditLogs).values({
+      tenantId,
+      actorType: "System",
+      action: "RECONCILIATION_COMPLETED",
+      entityType: "ReconciliationRun",
+      entityId: runId,
+      afterState: completedRun,
+      metadata: { matchRate, processedRecords }
+    });
+
+    const durationMs = Date.now() - startTime;
+    const exceptionRate = totalRecords > 0 
+      ? ((unmatchedRecords + reviewRecords) / totalRecords) * 100 
+      : 0;
+
+    metrics.log({
+      name: 'reconciliation_duration',
+      value: durationMs,
+      unit: 'ms',
+      tags: { tenantId, runId }
+    });
+
+    metrics.log({
+      name: 'records_processed',
+      value: processedRecords,
+      tags: { tenantId, runId }
+    });
+
+    metrics.log({
+      name: 'match_rate',
+      value: Number(matchRate),
+      unit: 'percent',
+      tags: { tenantId, runId }
+    });
+
+    metrics.log({
+      name: 'exception_rate',
+      value: exceptionRate,
+      unit: 'percent',
+      tags: { tenantId, runId }
+    });
+
+    metrics.event('worker_job_completed', { runId, tenantId, jobId: job.id, durationMs });
 
     return { success: true };
 
   } catch (error: any) {
-    console.error(`Reconciliation Worker Error (Run: ${runId}):`, error);
+    metrics.error('worker_job_failed', error, { runId, tenantId, jobId: job.id });
     await db.update(reconciliationRuns).set({
       status: 'FAILED',
       currentStep: 'Failed',
@@ -306,9 +372,9 @@ export const reconciliationWorker = new Worker('ReconciliationQueue', processRec
 });
 
 reconciliationWorker.on('completed', job => {
-  console.log(`${job.id} has completed!`);
+  metrics.event('bullmq_job_completed', { jobId: job.id, runId: job.data?.runId });
 });
 
 reconciliationWorker.on('failed', (job, err) => {
-  console.log(`${job?.id} has failed with ${err.message}`);
+  metrics.error('bullmq_job_failed', err, { jobId: job?.id, runId: job?.data?.runId });
 });
