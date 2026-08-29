@@ -9,6 +9,8 @@ import { Runs } from "./pages/RunList";
 import { Exceptions } from "./pages/Exceptions";
 import { CashPosition } from "./pages/CashPosition";
 import { AskAI } from "./pages/AskAI";
+import { AuditLog } from "./pages/AuditLog";
+import { Reports } from "./pages/Reports";
 import { Onboarding } from "./pages/Onboarding";
 import { RequireRole } from "./components/layout/RequireRole";
 import { Import } from "./pages/Import";
@@ -104,8 +106,9 @@ function App() {
             <Route path="/exceptions" element={<Exceptions />} />
             <Route path="/exceptions/:exceptionId" element={<div className="p-8 text-xl text-charm-muted">Exception Details Placeholder</div>} />
             <Route path="/cash-position" element={<CashPosition />} />
+            <Route path="/reports" element={<Reports />} />
             <Route path="/ask-ai" element={<AskAI />} />
-            <Route path="/audit-log" element={<div className="p-8 text-xl text-charm-muted">Audit Log Placeholder</div>} />
+            <Route path="/audit-log" element={<AuditLog />} />
             <Route path="/settings" element={
               <RequireRole allowedRoles={["ADMIN"]}>
                 <div className="p-8 text-xl text-charm-muted">Settings Placeholder</div>

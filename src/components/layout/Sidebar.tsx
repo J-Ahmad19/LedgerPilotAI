@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, Upload, Activity, List, AlertTriangle, DollarSign, BrainCircuit, History, Settings } from "lucide-react";
+import { LayoutDashboard, Upload, Activity, List, AlertTriangle, DollarSign, BrainCircuit, History, Settings, BarChart2 } from "lucide-react";
 import { cn } from "../../lib/utils";
 
 export function Sidebar() {
@@ -25,6 +25,7 @@ export function Sidebar() {
       label: "FINANCIAL INSIGHTS",
       links: [
         { name: "Cash Position", href: "/cash-position", icon: DollarSign },
+        { name: "Reports", href: "/reports", icon: BarChart2 },
         { name: "Ask LedgerPilot", href: "/ask-ai", icon: BrainCircuit },
       ]
     },

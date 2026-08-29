@@ -260,5 +260,80 @@ export const api = {
       throw new Error(err.error || "Failed to upload file");
     }
     return res.json();
+  },
+
+  async getAuditLogs(filters: { action?: string; entityType?: string; actorType?: string } = {}) {
+    const params = new URLSearchParams();
+    if (filters.action) params.append("action", filters.action);
+    if (filters.entityType) params.append("entityType", filters.entityType);
+    if (filters.actorType) params.append("actorType", filters.actorType);
+    
+    const res = await fetch(`${API_BASE}/audit-logs?${params.toString()}`, {
+      headers: getHeaders(),
+    });
+    if (!res.ok) throw new Error("Failed to fetch audit logs");
+    return res.json();
+  },
+
+  reports: {
+    async getReconciliationSummary(filters: any = {}) {
+      const params = new URLSearchParams();
+      if (filters.startDate) params.append("startDate", filters.startDate);
+      if (filters.endDate) params.append("endDate", filters.endDate);
+      const res = await fetch(`${API_BASE}/reports/reconciliation-summary?${params.toString()}`, { headers: getHeaders() });
+      if (!res.ok) throw new Error("Failed to fetch report");
+      return res.json();
+    },
+    async getExceptionsReport(filters: any = {}) {
+      const params = new URLSearchParams();
+      if (filters.startDate) params.append("startDate", filters.startDate);
+      if (filters.endDate) params.append("endDate", filters.endDate);
+      if (filters.runId) params.append("runId", filters.runId);
+      const res = await fetch(`${API_BASE}/reports/exceptions?${params.toString()}`, { headers: getHeaders() });
+      if (!res.ok) throw new Error("Failed to fetch report");
+      return res.json();
+    },
+    async getMatchRateTrend(filters: any = {}) {
+      const params = new URLSearchParams();
+      if (filters.startDate) params.append("startDate", filters.startDate);
+      if (filters.endDate) params.append("endDate", filters.endDate);
+      const res = await fetch(`${API_BASE}/reports/match-rate-trend?${params.toString()}`, { headers: getHeaders() });
+      if (!res.ok) throw new Error("Failed to fetch report");
+      return res.json();
+    },
+    async getCashVarianceReport(filters: any = {}) {
+      const params = new URLSearchParams();
+      if (filters.startDate) params.append("startDate", filters.startDate);
+      if (filters.endDate) params.append("endDate", filters.endDate);
+      const res = await fetch(`${API_BASE}/reports/cash-variance?${params.toString()}`, { headers: getHeaders() });
+      if (!res.ok) throw new Error("Failed to fetch report");
+      return res.json();
+    },
+    async getUnmatchedTransactionsReport(filters: any = {}) {
+      const params = new URLSearchParams();
+      if (filters.startDate) params.append("startDate", filters.startDate);
+      if (filters.endDate) params.append("endDate", filters.endDate);
+      if (filters.sourceId) params.append("sourceId", filters.sourceId);
+      const res = await fetch(`${API_BASE}/reports/unmatched-transactions?${params.toString()}`, { headers: getHeaders() });
+      if (!res.ok) throw new Error("Failed to fetch report");
+      return res.json();
+    },
+    async getAIDecisionSummary(filters: any = {}) {
+      const params = new URLSearchParams();
+      if (filters.startDate) params.append("startDate", filters.startDate);
+      if (filters.endDate) params.append("endDate", filters.endDate);
+      if (filters.runId) params.append("runId", filters.runId);
+      const res = await fetch(`${API_BASE}/reports/ai-decisions?${params.toString()}`, { headers: getHeaders() });
+      if (!res.ok) throw new Error("Failed to fetch report");
+      return res.json();
+    },
+    async getRunPerformanceReport(filters: any = {}) {
+      const params = new URLSearchParams();
+      if (filters.startDate) params.append("startDate", filters.startDate);
+      if (filters.endDate) params.append("endDate", filters.endDate);
+      const res = await fetch(`${API_BASE}/reports/run-performance?${params.toString()}`, { headers: getHeaders() });
+      if (!res.ok) throw new Error("Failed to fetch report");
+      return res.json();
+    }
   }
 };
