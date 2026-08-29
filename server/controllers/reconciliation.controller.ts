@@ -50,10 +50,14 @@ export async function getRuns(req: AuthRequest, res: Response) {
   }
 }
 
-export async function getRunDetails(req: Request, res: Response) {
+export async function getRunDetails(req: AuthRequest, res: Response) {
   try {
+    const tenantId = req.tenantId;
     const runId = req.params.id;
-    const run = await reconciliationService.getRunDetails(runId);
+    if (!tenantId) {
+      return res.status(400).json({ error: "Missing tenantId" });
+    }
+    const run = await reconciliationService.getRunDetails(runId, tenantId);
     if (!run) {
       return res.status(404).json({ error: "Run not found" });
     }
@@ -63,14 +67,19 @@ export async function getRunDetails(req: Request, res: Response) {
   }
 }
 
-export async function getRunTransactions(req: Request, res: Response) {
+export async function getRunTransactions(req: AuthRequest, res: Response) {
   try {
+    const tenantId = req.tenantId;
     const runId = req.params.id;
     const status = req.query.status as string || 'ALL';
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 50;
     
-    const transactions = await reconciliationService.getRunTransactions(runId, status, page, limit);
+    if (!tenantId) {
+      return res.status(400).json({ error: "Missing tenantId" });
+    }
+
+    const transactions = await reconciliationService.getRunTransactions(runId, tenantId, status, page, limit);
     res.json(transactions);
   } catch (error: any) {
     console.error("Error fetching run transactions:", error);
