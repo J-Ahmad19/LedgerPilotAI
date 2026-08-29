@@ -1,5 +1,5 @@
 import { db } from "../db/index.js";
-import { transactions, exceptions, dataSources } from "../db/schema.js";
+import { transactions, exceptions, dataSources, auditLogs } from "../db/schema.js";
 import { eq, and, inArray, desc } from "drizzle-orm";
 
 export class CashService {
@@ -110,13 +110,29 @@ export class CashService {
       };
     });
 
-    return {
+    const result = {
       expectedClosingCashMinor: expectedClosingCashMinor.toString(),
       actualBankBalanceMinor: actualBankBalanceMinor.toString(),
       varianceMinor: varianceMinor.toString(),
       breakdown,
       topTransactions
     };
+
+    // Emit audit log for cash variance recalculated
+    await db.insert(auditLogs).values({
+      tenantId,
+      actorType: "System",
+      action: "CASH_VARIANCE_RECALCULATED",
+      entityType: "Tenant",
+      entityId: tenantId,
+      metadata: { 
+        expectedClosingCashMinor: expectedClosingCashMinor.toString(),
+        actualBankBalanceMinor: actualBankBalanceMinor.toString(),
+        varianceMinor: varianceMinor.toString()
+      }
+    });
+
+    return result;
   }
 }
 

@@ -24,6 +24,16 @@ export class ReconciliationService {
       tenantId
     });
 
+    await db.insert(auditLogs).values({
+      tenantId,
+      actorType: "System", // Or user if invoked by user, but let's stick to System for now or if we don't have user context
+      action: "RECONCILIATION_STARTED",
+      entityType: "ReconciliationRun",
+      entityId: run.id,
+      afterState: run,
+      metadata: { message: "Reconciliation run queued" }
+    });
+
     return {
       runId: run.id,
       status: "QUEUED",
@@ -37,17 +47,17 @@ export class ReconciliationService {
     });
   }
 
-  async getRunDetails(runId: string) {
+  async getRunDetails(runId: string, tenantId: string) {
     const [run] = await db.query.reconciliationRuns.findMany({
-      where: eq(reconciliationRuns.id, runId)
+      where: and(eq(reconciliationRuns.id, runId), eq(reconciliationRuns.tenantId, tenantId))
     });
     return run;
   }
 
   async cancelRun(runId: string, tenantId: string) {
     // Only allow cancelling if it's QUEUED or PROCESSING
-    const run = await this.getRunDetails(runId);
-    if (!run || run.tenantId !== tenantId) {
+    const run = await this.getRunDetails(runId, tenantId);
+    if (!run) {
       throw new Error("Run not found or unauthorized");
     }
     
@@ -63,9 +73,13 @@ export class ReconciliationService {
 
     return { success: true, message: "Run cancelled successfully" };
   }
-  async getRunTransactions(runId: string, statusFilter: string = 'ALL', page: number = 1, limit: number = 50) {
+  async getRunTransactions(runId: string, tenantId: string, statusFilter: string = 'ALL', page: number = 1, limit: number = 50) {
     const offset = (page - 1) * limit;
-    
+
+    // Verify run belongs to tenant
+    const run = await this.getRunDetails(runId, tenantId);
+    if (!run) throw new Error("Run not found");
+
     let result: any[] = [];
     
     // Matched Transactions
