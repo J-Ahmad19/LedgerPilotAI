@@ -90,10 +90,22 @@ export async function resolveException(req: AuthRequest, res: Response) {
     // decision can be 'Approve Match', 'Reject Match', 'Keep Unmatched'
 
     await db.transaction(async (tx) => {
-      // 1. Get exception and source transaction
-      const exc = await tx.select().from(exceptions).where(eq(exceptions.id, id)).limit(1);
-      if (!exc.length) throw new Error("Exception not found");
-      const exception = exc[0];
+      // 1. Get exception and verify it belongs to the tenant via transactions table
+      const excRecords = await tx
+        .select({
+          exception: exceptions,
+          transaction: transactions
+        })
+        .from(exceptions)
+        .innerJoin(transactions, eq(exceptions.transactionId, transactions.id))
+        .where(and(
+          eq(exceptions.id, id),
+          eq(transactions.tenantId, tenantId as string)
+        ))
+        .limit(1);
+
+      if (!excRecords.length) throw new Error("Exception not found or access denied");
+      const exception = excRecords[0].exception;
 
       // 2. Determine new statuses
       let sourceTxStatus = "UNMATCHED";
@@ -123,18 +135,38 @@ export async function resolveException(req: AuthRequest, res: Response) {
         })
         .where(eq(exceptions.id, id));
 
+      let actionType = "TRANSACTION_MARKED_UNMATCHED";
+      if (decision === 'Approve Match') actionType = "EXCEPTION_APPROVED";
+      if (decision === 'Reject Match') actionType = "EXCEPTION_REJECTED";
+
       // 5. Create audit log
-      await tx.insert(auditLogs).values({
+      const auditLogEntries = [{
         tenantId: tenantId as string,
         actorType: "User",
         actorId: userId,
-        action: "RESOLVE_EXCEPTION",
+        action: actionType,
         entityType: "Exception",
         entityId: id,
         beforeState: exception,
         afterState: { status: exceptionStatus, decision, targetTransactionId, resolutionNote },
         metadata: { decision, sourceTxStatus }
-      });
+      }];
+
+      if (resolutionNote) {
+        auditLogEntries.push({
+          tenantId: tenantId as string,
+          actorType: "User",
+          actorId: userId,
+          action: "RESOLUTION_NOTE_ADDED",
+          entityType: "Exception",
+          entityId: id,
+          beforeState: { resolutionNote: exception.resolutionNote },
+          afterState: { resolutionNote },
+          metadata: { message: "Resolution note appended to exception" }
+        });
+      }
+
+      await tx.insert(auditLogs).values(auditLogEntries);
     });
 
     res.json({ success: true });
