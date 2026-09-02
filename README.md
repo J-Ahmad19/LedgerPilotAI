@@ -133,14 +133,16 @@ npm install
 Create a `.env` file in the root directory based on the provided defaults. Ensure you have the following keys configured:
 ```env
 # Database
-DATABASE_URL=postgresql://postgres:password@localhost:5432/ledgerpilot
+DATABASE_URL="postgresql://postgres:password@localhost:5432/ledgerpilot"
+PORT=3000
 
 # Redis
-REDIS_URL=redis://localhost:6379
+REDIS_URL="redis://localhost:6379"
 
-# AI APIs (Choose your preferred provider)
-GOOGLE_GENAI_API_KEY=your_gemini_key_here
-GROQ_API_KEY=your_groq_key_here
+# AI APIs
+GROQ_API_KEY="your_groq_key_here"
+LLM_MODEL_NAME="llama-3.1-8b-instant"
+EMBEDDING_MODEL_NAME="all-MiniLM-L6-v2"
 ```
 
 ### 3. Database Setup
