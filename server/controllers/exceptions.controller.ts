@@ -30,6 +30,7 @@ export async function getExceptions(req: AuthRequest, res: Response) {
 
     res.json({ exceptions: exceptionsList });
   } catch (error: any) {
+    console.error("GET EXCEPTIONS ERROR:", error);
     res.status(500).json({ error: error.message || "Internal server error" });
   }
 }

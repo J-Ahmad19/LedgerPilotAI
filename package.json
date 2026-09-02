@@ -9,7 +9,14 @@
     "preview": "vite preview",
     "dev:server": "tsx watch server/index.ts",
     "db:push": "drizzle-kit push",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:unit": "vitest run --reporter=verbose server/__tests__/unit",
+    "test:integration": "vitest run --reporter=verbose server/__tests__/integration",
+    "test:ai": "vitest run --reporter=verbose server/__tests__/ai",
+    "test:e2e": "vitest run --reporter=verbose server/__tests__/e2e",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@google/genai": "^2.18.0",

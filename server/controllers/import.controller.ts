@@ -71,6 +71,7 @@ export async function importDemoData(req: AuthRequest, res: Response) {
     const files = [
       { name: "payments.csv", type: "PAYMENTS" },
       { name: "settlements.csv", type: "SETTLEMENTS" },
+      { name: "bank.csv", type: "BANK" },
       { name: "ledger.csv", type: "LEDGER" }
     ];
 

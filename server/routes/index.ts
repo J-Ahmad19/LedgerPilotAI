@@ -39,8 +39,8 @@ router.post("/auth/login", login);
 router.use(authenticateToken as any);
 router.get("/auth/me", getMe as any);
 
-// Workspace is ADMIN only
-router.use("/workspace", requireRole(["ADMIN"]), workspaceRoutes);
+// Allow PENDING users (newly registered) to create a workspace
+router.use("/workspace", requireRole(["ADMIN", "PENDING"]), workspaceRoutes);
 
 // Require tenant for all subsequent routes
 router.use(requireTenant as any);
