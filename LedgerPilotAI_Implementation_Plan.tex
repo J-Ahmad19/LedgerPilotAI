@@ -1,0 +1,90 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{geometry}
+\geometry{margin=1in}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{tcolorbox}
+
+\definecolor{primary}{RGB}{33, 64, 154}
+\titleformat{\section}{\Large\bfseries\color{primary}}{}{0em}{}[\titlerule]
+\titleformat{\subsection}{\large\bfseries\color{darkgray}}{}{0em}{}
+
+\title{\textbf{\Huge LedgerPilotAI} \\ \vspace{0.5em} \Large Step-by-Step Implementation Plan}
+\author{Based on the AI Finance Controller Technical Design}
+\date{}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{empty}
+
+\begin{abstract}
+\noindent This document provides a structured, production-oriented implementation roadmap for \textbf{LedgerPilotAI}. The system is designed to automate financial reconciliation, manage exceptions, provide AI-assisted matching, and analyze cash positions across multiple financial data sources.
+\end{abstract}
+
+\vspace{1em}
+
+\section{Phase 1: Foundation}
+\textit{Objective: Establish the core application infrastructure and database schema.}
+\begin{itemize}[label=$\bullet$, leftmargin=*]
+    \item \textbf{Frontend:} Initialize the React application with TypeScript, Vite, React Router, and Tailwind CSS.
+    \item \textbf{Backend API:} Initialize the Node.js and Express API using TypeScript. Set up the foundational folder structure (routes, controllers, services).
+    \item \textbf{Database:} Provision a Neon PostgreSQL database.
+    \item \textbf{ORM Setup:} Configure Drizzle ORM, define the core schema (Tenants, Users, Transactions, Exceptions), and implement initial database migrations.
+\end{itemize}
+
+\section{Phase 2: Data Pipeline}
+\textit{Objective: Enable secure and idempotent ingestion of financial records.}
+\begin{itemize}[label=$\bullet$, leftmargin=*]
+    \item \textbf{Synthetic Data:} Build a script to generate a synthetic dataset of 100--120 records containing realistic imperfections (e.g., date offsets, amount mismatches, missing references).
+    \item \textbf{Ingestion API:} Implement CSV and JSON file upload and ingestion pipelines.
+    \item \textbf{Validation:} Add application-level schema validation using Zod (e.g., required external IDs, numeric amounts).
+    \item \textbf{Normalization:} Convert incoming records into a canonical transaction format (normalizing names, dates, and minor currency units).
+    \item \textbf{Idempotency:} Implement duplicate fingerprinting (SHA256 hash of source, ID, amount, date) to prevent double processing.
+\end{itemize}
+
+\section{Phase 3: Reconciliation Engine}
+\textit{Objective: Implement the deterministic matching logic and scoring algorithms.}
+\begin{itemize}[label=$\bullet$, leftmargin=*]
+    \item \textbf{Layer 1 (Exact):} Implement exact matching for references, identifiers, and exact amounts.
+    \item \textbf{Candidate Generation:} Build broad database filters to group potential transaction candidates efficiently (e.g., matching currency, dates within a tight tolerance).
+    \item \textbf{Deterministic Scoring:} Implement component scores (Amount Score, Date Score, Reference Score, Description Score) and a weighted composite score.
+    \item \textbf{Run Model:} Create the \texttt{reconciliation\_runs} logic to track batch progress, match rates, and unresolved amounts.
+    \item \textbf{Results Persistence:} Save high-confidence matched pairs to the database and queue low-confidence items as exceptions.
+\end{itemize}
+
+\section{Phase 4: AI Layer}
+\textit{Objective: Introduce AI safely to handle ambiguous transactions and natural language queries.}
+\begin{itemize}[label=$\bullet$, leftmargin=*]
+    \item \textbf{Structured Output:} Define strict TypeScript interfaces and JSON schemas for the AI agent's decision-making output (MATCH, REVIEW, UNMATCHED).
+    \item \textbf{Tool Calling:} Build validated backend tools that the LLM can invoke (e.g., \texttt{getTransactions()}, \texttt{findCandidates()}).
+    \item \textbf{Ambiguous Workflow:} Route medium-confidence fuzzy matches to the AI for semantic evaluation, extracting evidence and reason codes.
+    \item \textbf{Explanation Engine:} Use the AI to generate readable explanations for unresolved exceptions.
+    \item \textbf{Natural Language Interface:} Implement the AI Finance Assistant endpoint to answer queries (e.g., "Why are there 12 exceptions?").
+\end{itemize}
+
+\section{Phase 5: Dashboard \& UI}
+\textit{Objective: Build the human-in-the-loop interfaces for finance operators.}
+\begin{itemize}[label=$\bullet$, leftmargin=*]
+    \item \textbf{Main Dashboard:} Display aggregate metrics, total records processed, match rates, and active exceptions.
+    \item \textbf{Run Details Screen:} Build a view to track specific reconciliation runs and their resulting transaction states.
+    \item \textbf{Exception Review UI:} Create a queue where human operators can inspect candidate evidence, approve/reject AI suggestions, and add resolution notes.
+    \item \textbf{Cash Position View:} Implement the "Why Is My Cash Off?" screen, calculating expected vs. actual balance and tracing the variance to specific unreconciled transactions.
+\end{itemize}
+
+\section{Phase 6: Production Hardening}
+\textit{Objective: Secure and optimize the system for enterprise deployment.}
+\begin{itemize}[label=$\bullet$, leftmargin=*]
+    \item \textbf{Security:} Implement authentication, Role-Based Access Control (RBAC), and strict tenant-level query isolation across all endpoints.
+    \item \textbf{Background Processing:} Extract heavy reconciliation jobs into a background worker queue (e.g., using BullMQ).
+    \item \textbf{Observability:} Add structured logging (e.g., Pino) and track metrics for latency and matching performance.
+    \item \textbf{Testing:} Write comprehensive unit tests for financial calculations and integration tests for the reconciliation loop.
+    \item \textbf{Audit Logging:} Ensure every automated and manual decision writes an immutable entry to the \texttt{audit\_logs} table.
+\end{itemize}
+
+\end{document}
