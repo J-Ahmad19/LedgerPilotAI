@@ -59,7 +59,7 @@ export function AskAI() {
     >
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-charm-heading font-display flex items-center gap-3">
-          Ask LedgerPilot
+          Ask LedgerPilotAI
           <Sparkles className="w-6 h-6 text-charm-brand" />
         </h1>
         <p className="text-charm-muted mt-2">Investigate financial state, cash variances, and exceptions.</p>

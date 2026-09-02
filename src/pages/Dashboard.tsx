@@ -4,6 +4,20 @@ import { Activity, AlertCircle, CheckCircle2, FileSpreadsheet, ArrowRight, Dolla
 import { Link, useNavigate } from "react-router-dom";
 import { api } from "../services/api";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+import { motion } from "framer-motion";
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.05 }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 15 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } }
+};
 
 export function Dashboard() {
   const navigate = useNavigate();
@@ -34,9 +48,6 @@ export function Dashboard() {
   if (data.isEmpty) {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-center max-w-lg mx-auto">
-        <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-6">
-          <FileSpreadsheet className="w-8 h-8 text-blue-600" />
-        </div>
         <h1 className="text-3xl font-bold text-charm-heading font-display mb-4">
           Connect your financial records to begin.
         </h1>
@@ -63,7 +74,12 @@ export function Dashboard() {
   } = data;
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
+    <motion.div 
+      className="space-y-8"
+      variants={containerVariants}
+      initial="hidden"
+      animate="show"
+    >
       <div className="flex justify-between items-end">
         <div>
           <h1 className="text-3xl font-bold text-charm-heading font-display">
@@ -143,7 +159,7 @@ export function Dashboard() {
         {/* Left Column: Trend and Recent Runs */}
         <div className="lg:col-span-2 space-y-8">
           
-          <div className="charm-panel p-6">
+          <motion.div variants={itemVariants} className="charm-panel p-6">
             <h2 className="text-lg font-bold mb-6 text-charm-heading font-display">Reconciliation Trend</h2>
             <div className="h-72">
               {reconciliationTrend.length > 0 ? (
@@ -163,9 +179,9 @@ export function Dashboard() {
                 <div className="h-full flex items-center justify-center text-charm-muted">Not enough data to display trend</div>
               )}
             </div>
-          </div>
+          </motion.div>
 
-          <div className="charm-panel p-0 overflow-hidden">
+          <motion.div variants={itemVariants} className="charm-panel p-0 overflow-hidden">
             <div className="p-6 border-b border-charm-border flex justify-between items-center bg-white">
               <h2 className="text-lg font-bold text-charm-heading font-display">Recent Reconciliation Runs</h2>
               <Link to="/runs" className="text-sm font-medium text-charm-brandText hover:text-charm-brand">View All</Link>
@@ -175,25 +191,26 @@ export function Dashboard() {
                 <thead className="bg-charm-section">
                   <tr>
                     <th className="px-6 py-3 text-xs font-semibold text-charm-muted uppercase tracking-wider">Run ID</th>
-                    <th className="px-6 py-3 text-xs font-semibold text-charm-muted uppercase tracking-wider">Records</th>
-                    <th className="px-6 py-3 text-xs font-semibold text-charm-muted uppercase tracking-wider">Match Rate</th>
-                    <th className="px-6 py-3 text-xs font-semibold text-charm-muted uppercase tracking-wider">Exceptions</th>
+                    <th className="px-6 py-3 text-xs font-semibold text-charm-muted uppercase tracking-wider text-right">Records</th>
+                    <th className="px-6 py-3 text-xs font-semibold text-charm-muted uppercase tracking-wider text-right">Match Rate</th>
+                    <th className="px-6 py-3 text-xs font-semibold text-charm-muted uppercase tracking-wider text-right">Exceptions</th>
                     <th className="px-6 py-3 text-xs font-semibold text-charm-muted uppercase tracking-wider">Status</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-charm-border">
                   {recentRuns.map((run: any) => (
                     <tr key={run.runId} className="hover:bg-charm-section/50 transition-colors cursor-pointer" onClick={() => navigate(`/runs/${run.runId}`)}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-charm-heading">{run.runId.substring(0, 8)}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-charm-body">{run.records.toLocaleString()}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-charm-body">{run.matchRate}%</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-charm-body">{run.exceptions}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-charm-heading">{run.runId.substring(0, 8)}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-charm-body text-right">{run.records.toLocaleString()}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-charm-body text-right">{run.matchRate}%</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-charm-body text-right">{run.exceptions}</td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                          ${run.status === 'COMPLETED' ? 'bg-green-100 text-green-800' : ''}
-                          ${run.status === 'PROCESSING' ? 'bg-blue-100 text-blue-800' : ''}
-                          ${run.status === 'FAILED' ? 'bg-red-100 text-red-800' : ''}
-                        `}>
+                        <span className="flex items-center text-xs font-medium text-charm-body">
+                          <span className={`w-1.5 h-1.5 rounded-full mr-2
+                            ${run.status === 'COMPLETED' ? 'bg-green-500' : ''}
+                            ${run.status === 'PROCESSING' ? 'bg-blue-500' : ''}
+                            ${run.status === 'FAILED' ? 'bg-red-500' : ''}
+                          `}></span>
                           {run.status}
                         </span>
                       </td>
@@ -207,29 +224,30 @@ export function Dashboard() {
                 </tbody>
               </table>
             </div>
-          </div>
+          </motion.div>
 
         </div>
 
         {/* Right Column: Needs Attention and Cash Position */}
         <div className="space-y-8">
           
-          <div className="charm-panel p-6 flex flex-col items-start bg-white border border-charm-border">
+          <motion.div variants={itemVariants} className="charm-panel p-6 flex flex-col items-start bg-white border border-charm-border">
             <h2 className="text-lg font-bold text-charm-heading font-display mb-2">Cash Position</h2>
             <p className="text-sm text-charm-muted mb-6">Comparison of expected vs actual balances.</p>
             
             <div className="w-full space-y-4">
               <div className="flex justify-between items-center pb-4 border-b border-charm-border">
                 <span className="text-charm-body font-medium">Expected Cash</span>
-                <span className="text-charm-heading font-semibold">${(Number(kpis.expectedCash) / 100).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                <span className="text-charm-heading font-semibold font-mono">${(Number(kpis.expectedCash) / 100).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
               </div>
               <div className="flex justify-between items-center pb-4 border-b border-charm-border">
                 <span className="text-charm-body font-medium">Actual Cash</span>
-                <span className="text-charm-heading font-semibold">${(Number(kpis.actualCash) / 100).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                <span className="text-charm-heading font-semibold font-mono">${(Number(kpis.actualCash) / 100).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
               </div>
               <div className="flex justify-between items-center pt-2">
                 <span className="text-charm-body font-bold">Variance</span>
-                <span className={`font-bold ${Number(kpis.cashVariance) !== 0 ? 'text-red-600' : 'text-green-600'}`}>
+                <span className={`font-bold font-mono flex items-center gap-2 ${Number(kpis.cashVariance) !== 0 ? 'text-red-600' : 'text-green-600'}`}>
+                  {Number(kpis.cashVariance) !== 0 && <span className="w-1.5 h-1.5 bg-red-600 rounded-full"></span>}
                   ${(Number(kpis.cashVariance) / 100).toLocaleString(undefined, { minimumFractionDigits: 2 })}
                 </span>
               </div>
@@ -238,9 +256,9 @@ export function Dashboard() {
             <Link to="/cash-position" className="mt-8 w-full block text-center bg-white border border-charm-border hover:bg-charm-section text-charm-heading px-4 py-2 rounded-lg font-medium transition-colors">
               Why Is My Cash Off?
             </Link>
-          </div>
+          </motion.div>
 
-          <div className="charm-panel p-0 overflow-hidden bg-white border-charm-border">
+          <motion.div variants={itemVariants} className="charm-panel p-0 overflow-hidden bg-white border-charm-border">
              <div className="p-6 border-b border-charm-border bg-white flex justify-between items-center">
               <h2 className="text-lg font-bold text-charm-heading font-display">Needs Your Attention</h2>
             </div>
@@ -248,10 +266,11 @@ export function Dashboard() {
               {needsAttention.map((exception: any) => (
                 <div key={exception.id} className="p-4 hover:bg-charm-section/50 transition-colors">
                   <div className="flex justify-between items-start mb-2">
-                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
+                    <span className="flex items-center text-xs font-medium text-red-600">
+                      <span className="w-1.5 h-1.5 bg-red-500 rounded-full mr-1.5"></span>
                       {exception.type.replace(/_/g, ' ')}
                     </span>
-                    <span className="text-sm font-semibold text-charm-heading">${(Number(exception.amount) / 100).toFixed(2)} {exception.currency}</span>
+                    <span className="text-sm font-semibold font-mono text-charm-heading">${(Number(exception.amount) / 100).toFixed(2)} {exception.currency}</span>
                   </div>
                   <p className="text-sm text-charm-body mb-3 line-clamp-2">{exception.reason}</p>
                 </div>
@@ -270,32 +289,36 @@ export function Dashboard() {
                 </Link>
               </div>
             )}
-          </div>
+          </motion.div>
 
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
 function MetricCard({ title, value, icon: Icon, trend, highlight, alert }: any) {
   return (
-    <div className={`p-6 rounded-2xl border ${highlight ? 'border-blue-500/20 bg-blue-50' : alert ? 'border-red-500/20 bg-red-50' : 'border-charm-border bg-white'} shadow-sm flex flex-col justify-between`}>
+    <motion.div 
+      variants={itemVariants}
+      className="p-6 rounded-xl border border-charm-border bg-white shadow-sm flex flex-col justify-between"
+    >
       <div className="flex justify-between items-start mb-4">
         <div>
           <p className="text-sm text-charm-muted font-medium">{title}</p>
-          <p className="text-3xl font-bold mt-2 text-charm-heading font-display">{value}</p>
+          <p className={`text-3xl font-bold mt-2 font-mono ${alert ? 'text-red-600' : 'text-charm-heading'}`}>{value}</p>
         </div>
-        <div className={`p-3 rounded-xl ${highlight ? 'bg-blue-100 text-blue-600' : alert ? 'bg-red-100 text-red-600' : 'bg-charm-section text-charm-heading border border-charm-border'}`}>
-          <Icon className="w-5 h-5" />
+        <div className="p-2 rounded-lg text-charm-muted bg-charm-section border border-charm-border">
+          <Icon className="w-4 h-4" />
         </div>
       </div>
       {trend && (
-        <p className={`text-xs font-medium ${alert ? 'text-red-600' : 'text-charm-muted'}`}>
+        <p className={`text-xs font-medium flex items-center gap-1.5 ${alert ? 'text-red-600' : 'text-charm-muted'}`}>
+          {alert && <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>}
           {trend}
         </p>
       )}
-    </div>
+    </motion.div>
   );
 }
 

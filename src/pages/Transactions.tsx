@@ -159,7 +159,7 @@ export function Transactions() {
                     data?.data?.map((tx: any) => (
                       <TableRow 
                         key={tx.id} 
-                        className="cursor-pointer hover:bg-charm-surface/80 transition-colors"
+                        className="cursor-pointer hover:bg-charm-section/50 transition-colors"
                         onClick={() => setSelectedTransactionId(tx.id)}
                       >
                         <TableCell className="font-mono text-xs">{tx.referenceId || tx.id.substring(0,8)}</TableCell>
@@ -183,16 +183,17 @@ export function Transactions() {
                           ) : '-'}
                         </TableCell>
                         <TableCell>
-                          <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
-                            tx.status === 'MATCHED' ? 'bg-green-100 text-green-700' :
-                            tx.status === 'NEEDS_REVIEW' ? 'bg-amber-100 text-amber-700' :
-                            'bg-gray-100 text-gray-700'
-                          }`}>
+                          <span className="flex items-center text-xs font-medium text-charm-heading">
+                            <span className={`w-1.5 h-1.5 rounded-full mr-2 ${
+                              tx.status === 'MATCHED' ? 'bg-green-500' :
+                              tx.status === 'NEEDS_REVIEW' ? 'bg-amber-500' :
+                              'bg-gray-400'
+                            }`}></span>
                             {tx.status}
                           </span>
                           {tx.exceptionDetails && (
-                            <span className="ml-2 px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700" title="Has Exception">
-                              !
+                            <span className="ml-2 px-1.5 py-0.5 rounded text-[10px] font-bold bg-red-100 text-red-700 uppercase" title="Has Exception">
+                              Exc
                             </span>
                           )}
                         </TableCell>

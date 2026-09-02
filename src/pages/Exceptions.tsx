@@ -31,15 +31,15 @@ export function Exceptions() {
         </div>
         
         {/* Basic severity filters */}
-        <div className="flex space-x-2">
+        <div className="flex space-x-1 bg-charm-surface border border-charm-border rounded-lg p-1">
           {["All", "Critical", "High", "Medium"].map((filter) => (
             <button
               key={filter}
               onClick={() => setActiveFilter(filter)}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+              className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
                 activeFilter === filter 
-                  ? "bg-charm-brand text-white shadow-sm" 
-                  : "bg-charm-surface border border-charm-border text-charm-muted hover:text-charm-body"
+                  ? "bg-white text-charm-heading shadow-sm" 
+                  : "text-charm-muted hover:text-charm-body"
               }`}
             >
               {filter}
@@ -54,7 +54,7 @@ export function Exceptions() {
             <tr className="border-b border-charm-border bg-charm-base">
               <th className="p-4 text-xs font-semibold text-charm-muted uppercase tracking-wider">Exception ID</th>
               <th className="p-4 text-xs font-semibold text-charm-muted uppercase tracking-wider">Transaction</th>
-              <th className="p-4 text-xs font-semibold text-charm-muted uppercase tracking-wider">Amount</th>
+              <th className="p-4 text-xs font-semibold text-charm-muted uppercase tracking-wider text-right">Amount</th>
               <th className="p-4 text-xs font-semibold text-charm-muted uppercase tracking-wider">Reason</th>
               <th className="p-4 text-xs font-semibold text-charm-muted uppercase tracking-wider">Confidence</th>
               <th className="p-4 text-xs font-semibold text-charm-muted uppercase tracking-wider">AI Recommendation</th>
@@ -76,21 +76,22 @@ export function Exceptions() {
                 >
                   <td className="p-4 text-sm font-mono text-charm-body truncate max-w-[100px]">{exception.id.split('-')[0]}</td>
                   <td className="p-4 text-sm text-charm-heading max-w-[200px] truncate">{transaction?.description || transaction?.merchantName || transaction?.externalId}</td>
-                  <td className="p-4 text-sm font-semibold">{transaction?.amountMinor ? formatCurrency(transaction.amountMinor) : "-"}</td>
+                  <td className="p-4 text-sm font-mono font-medium text-right">{transaction?.amountMinor ? formatCurrency(transaction.amountMinor) : "-"}</td>
                   <td className="p-4 text-sm text-charm-body max-w-[200px] truncate">{exception.reason}</td>
-                  <td className="p-4 text-sm font-mono">{(Number(exception.confidence) * 100).toFixed(1)}%</td>
+                  <td className="p-4 text-sm font-mono text-charm-muted">{(Number(exception.confidence) * 100).toFixed(1)}%</td>
                   <td className="p-4 text-sm">
-                    <span className="px-2 py-1 rounded bg-blue-50 text-blue-700 border border-blue-200 text-xs">
+                    <span className="flex items-center text-xs font-medium text-charm-muted uppercase tracking-wider">
                       {exception.aiDecision || 'REVIEW'}
                     </span>
                   </td>
                   <td className="p-4 text-sm text-charm-muted">{ageDays}d</td>
                   <td className="p-4 text-sm">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium border ${
-                      exception.severity === 'CRITICAL' ? 'bg-red-100 text-red-700 border-red-200' : 
-                      exception.severity === 'HIGH' ? 'bg-orange-100 text-orange-700 border-orange-200' :
-                      'bg-amber-100 text-amber-700 border-amber-200'
-                    }`}>
+                    <span className="flex items-center text-xs font-medium text-charm-heading">
+                      <span className={`w-1.5 h-1.5 rounded-full mr-2 ${
+                        exception.severity === 'CRITICAL' ? 'bg-red-500' : 
+                        exception.severity === 'HIGH' ? 'bg-orange-500' :
+                        'bg-amber-500'
+                      }`}></span>
                       {exception.severity || 'MEDIUM'}
                     </span>
                   </td>

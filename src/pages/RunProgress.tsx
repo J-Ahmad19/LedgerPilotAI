@@ -35,6 +35,7 @@ export function RunProgress() {
   const [run, setRun] = useState<RunDetails | null>(null);
   const [error, setError] = useState("");
   const [isCancelling, setIsCancelling] = useState(false);
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
 
   useEffect(() => {
     if (!runId || !token) return;
@@ -85,17 +86,15 @@ export function RunProgress() {
     : 0;
 
   const handleCancel = async () => {
-    if (!window.confirm("Are you sure you want to cancel this run?")) return;
-    
     setIsCancelling(true);
     try {
       await api.cancelRun(runId!);
-      // Optimistically update
       setRun(prev => prev ? { ...prev, status: "CANCELLED", currentStep: "Cancelled by User" } : null);
     } catch (err: any) {
       alert(err.message || "Failed to cancel run");
     } finally {
       setIsCancelling(false);
+      setShowCancelConfirm(false);
     }
   };
 
@@ -164,20 +163,26 @@ export function RunProgress() {
         {/* Results Summary and Tabs (if completed) */}
         {run.status === "COMPLETED" && (
           <div className="space-y-6 mt-8 animate-in fade-in slide-in-from-bottom-4">
-            <div className="bg-charm-section p-6 rounded-lg border border-charm-border">
-              <h3 className="font-bold text-charm-heading text-lg mb-4">Run Results Summary</h3>
+            <div className="bg-white p-6 rounded-xl border border-charm-border shadow-sm">
+              <h3 className="font-semibold text-charm-heading text-lg mb-6 border-b border-charm-border pb-2">Run Results Summary</h3>
               <div className="grid grid-cols-3 gap-6 text-center">
                 <div>
-                  <p className="text-3xl font-bold text-green-600">{run.matchedRecords}</p>
-                  <p className="text-sm font-medium text-charm-muted">Auto-Matched</p>
+                  <p className="text-3xl font-bold text-charm-heading font-mono">{run.matchedRecords}</p>
+                  <p className="text-sm font-medium text-charm-muted uppercase tracking-wider mt-1">Auto-Matched</p>
                 </div>
                 <div>
-                  <p className="text-3xl font-bold text-yellow-600">{run.partialMatches}</p>
-                  <p className="text-sm font-medium text-charm-muted">Require Review</p>
+                  <p className="text-3xl font-bold text-charm-heading font-mono">{run.partialMatches}</p>
+                  <p className="text-sm font-medium text-amber-600 uppercase tracking-wider mt-1 flex items-center justify-center gap-1">
+                    {run.partialMatches > 0 && <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>}
+                    Require Review
+                  </p>
                 </div>
                 <div>
-                  <p className="text-3xl font-bold text-red-600">{run.unmatchedRecords}</p>
-                  <p className="text-sm font-medium text-charm-muted">Unmatched</p>
+                  <p className="text-3xl font-bold text-charm-heading font-mono">{run.unmatchedRecords}</p>
+                  <p className="text-sm font-medium text-red-600 uppercase tracking-wider mt-1 flex items-center justify-center gap-1">
+                    {run.unmatchedRecords > 0 && <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>}
+                    Unmatched
+                  </p>
                 </div>
               </div>
             </div>
@@ -190,13 +195,31 @@ export function RunProgress() {
         {/* Actions */}
         <div className="flex justify-end pt-4 border-t border-charm-border gap-4">
           {(run.status === "QUEUED" || run.status === "PROCESSING") && (
-            <button 
-              onClick={handleCancel}
-              disabled={isCancelling}
-              className="px-6 py-2 rounded-lg font-medium border border-red-200 text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
-            >
-              {isCancelling ? "Cancelling..." : "Cancel Run"}
-            </button>
+            showCancelConfirm ? (
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-red-600 font-medium mr-2">Are you sure?</span>
+                <button 
+                  onClick={() => setShowCancelConfirm(false)}
+                  className="px-4 py-2 rounded-lg font-medium text-charm-body hover:bg-charm-section transition-colors"
+                >
+                  No, Keep Running
+                </button>
+                <button 
+                  onClick={handleCancel}
+                  disabled={isCancelling}
+                  className="px-4 py-2 rounded-lg font-medium bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 transition-colors disabled:opacity-50"
+                >
+                  {isCancelling ? "Cancelling..." : "Yes, Cancel"}
+                </button>
+              </div>
+            ) : (
+              <button 
+                onClick={() => setShowCancelConfirm(true)}
+                className="px-6 py-2 rounded-lg font-medium border border-charm-border text-charm-muted hover:text-red-600 hover:border-red-200 transition-colors"
+              >
+                Cancel Run
+              </button>
+            )
           )}
 
           <button 

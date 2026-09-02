@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { api } from "../services/api";
-import { Bot, DollarSign, ArrowRight, TrendingDown, CheckCircle2 } from "lucide-react";
+import { Bot, FileText, ArrowRight, TrendingDown, CheckCircle2 } from "lucide-react";
 import { motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -52,20 +52,18 @@ export function CashPosition() {
 
       {/* TOP SUMMARY */}
       <div className="charm-panel p-8 relative overflow-hidden">
-        {/* Subtle background glow */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-charm-brand/5 blur-3xl pointer-events-none" />
+
 
         <div className="relative flex flex-col md:flex-row items-center justify-between gap-8">
           
           <motion.div 
             whileHover={{ scale: 1.02 }}
-            className="flex-1 text-center md:text-left bg-white p-6 rounded-2xl border border-charm-border shadow-sm"
+            className="flex-1 text-center md:text-left bg-white p-6 rounded-xl border border-charm-border shadow-sm"
           >
-            <div className="flex items-center justify-center md:justify-start space-x-2 mb-2">
-              <CheckCircle2 className="w-5 h-5 text-blue-600" />
-              <p className="text-sm text-blue-700 font-medium tracking-wide uppercase">Expected Cash</p>
+            <div className="flex items-center justify-center md:justify-start space-x-2 mb-4">
+              <p className="text-sm text-charm-muted font-medium tracking-wide uppercase">Expected Cash</p>
             </div>
-            <p className="text-4xl md:text-5xl font-bold text-charm-heading tracking-tight font-display">
+            <p className="text-3xl md:text-4xl font-bold text-charm-heading font-mono">
               {cp ? formatCurrency(cp.expectedClosingCashMinor) : "INR 0"}
             </p>
           </motion.div>
@@ -76,13 +74,12 @@ export function CashPosition() {
 
           <motion.div 
             whileHover={{ scale: 1.02 }}
-            className="flex-1 text-center bg-white p-6 rounded-2xl border border-charm-border shadow-sm"
+            className="flex-1 text-center bg-white p-6 rounded-xl border border-charm-border shadow-sm"
           >
-            <div className="flex items-center justify-center space-x-2 mb-2">
-              <DollarSign className="w-5 h-5 text-charm-muted" />
+            <div className="flex items-center justify-center space-x-2 mb-4">
               <p className="text-sm text-charm-muted font-medium tracking-wide uppercase">Actual Cash</p>
             </div>
-            <p className="text-4xl md:text-5xl font-bold text-charm-heading tracking-tight font-display">
+            <p className="text-3xl md:text-4xl font-bold text-charm-heading font-mono">
               {cp ? formatCurrency(cp.actualBankBalanceMinor) : "INR 0"}
             </p>
           </motion.div>
@@ -93,13 +90,13 @@ export function CashPosition() {
 
           <motion.div 
             whileHover={{ scale: 1.02 }}
-            className={`flex-1 text-center md:text-right p-6 rounded-2xl border transition-colors shadow-sm ${isVariance ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-200'}`}
+            className={`flex-1 text-center md:text-right p-6 rounded-xl border shadow-sm ${isVariance ? 'bg-white border-red-200' : 'bg-white border-green-200'}`}
           >
-            <div className="flex items-center justify-center md:justify-end space-x-2 mb-2">
-              <TrendingDown className={`w-5 h-5 ${isVariance ? 'text-red-600' : 'text-green-600'}`} />
+            <div className="flex items-center justify-center md:justify-end space-x-2 mb-4">
               <p className={`text-sm font-medium tracking-wide uppercase ${isVariance ? 'text-red-700' : 'text-green-700'}`}>Variance</p>
             </div>
-            <p className={`text-4xl md:text-5xl font-bold tracking-tight font-display ${isVariance ? 'text-red-600' : 'text-green-600'}`}>
+            <p className={`text-3xl md:text-4xl font-bold font-mono flex justify-center md:justify-end items-center gap-2 ${isVariance ? 'text-red-600' : 'text-green-600'}`}>
+              {isVariance && <span className="w-2 h-2 rounded-full bg-red-500"></span>}
               {cp ? formatCurrency(cp.varianceMinor) : "INR 0"}
             </p>
           </motion.div>
@@ -120,7 +117,7 @@ export function CashPosition() {
                       {item.percentage.toFixed(1)}%
                     </span>
                   </div>
-                  <p className="text-2xl font-bold text-red-600 font-display">
+                  <p className="text-xl font-bold text-charm-heading font-mono">
                     {formatCurrency(item.amountMinor)}
                   </p>
                   <p className="text-sm text-charm-muted mt-2">
@@ -151,7 +148,7 @@ export function CashPosition() {
                 <thead>
                   <tr className="border-b border-charm-border bg-charm-base">
                     <th className="p-4 text-xs font-semibold text-charm-muted uppercase tracking-wider">Transaction ID</th>
-                    <th className="p-4 text-xs font-semibold text-charm-muted uppercase tracking-wider">Amount</th>
+                    <th className="p-4 text-xs font-semibold text-charm-muted uppercase tracking-wider text-right">Amount</th>
                     <th className="p-4 text-xs font-semibold text-charm-muted uppercase tracking-wider">Source</th>
                     <th className="p-4 text-xs font-semibold text-charm-muted uppercase tracking-wider">Reason</th>
                     <th className="p-4 text-xs font-semibold text-charm-muted uppercase tracking-wider">Status</th>
@@ -165,14 +162,15 @@ export function CashPosition() {
                       onClick={() => navigate('/exceptions')} // In a full app, this would route to exception detail
                     >
                       <td className="p-4 text-sm font-mono text-charm-body truncate max-w-[100px]">{tx.id.split('-')[0]}</td>
-                      <td className="p-4 text-sm font-semibold text-red-600">{formatCurrency(tx.amountMinor)}</td>
+                      <td className="p-4 text-sm font-semibold font-mono text-charm-heading text-right">{formatCurrency(tx.amountMinor)}</td>
                       <td className="p-4 text-sm text-charm-heading max-w-[150px] truncate">{tx.source}</td>
                       <td className="p-4 text-sm text-charm-body max-w-[200px] truncate">{tx.reason}</td>
                       <td className="p-4 text-sm">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium border ${
-                          tx.status === 'UNMATCHED' ? 'bg-red-100 text-red-700 border-red-200' : 
-                          'bg-amber-100 text-amber-700 border-amber-200'
-                        }`}>
+                        <span className="flex items-center text-xs font-medium text-charm-heading">
+                          <span className={`w-1.5 h-1.5 rounded-full mr-2 ${
+                            tx.status === 'UNMATCHED' ? 'bg-red-500' : 
+                            'bg-amber-500'
+                          }`}></span>
                           {tx.status}
                         </span>
                       </td>
@@ -199,14 +197,14 @@ export function CashPosition() {
         transition={{ delay: 0.1 }}
         className="charm-panel overflow-hidden shadow-sm mt-8"
       >
-        <div className="p-6 border-b border-charm-border bg-charm-band flex items-center justify-between">
+        <div className="p-6 border-b border-charm-border bg-white flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <div className="w-12 h-12 rounded-xl bg-brand-gradient flex items-center justify-center shadow-brand">
-              <Bot className="w-6 h-6 text-white" />
+            <div className="p-2 rounded-lg bg-charm-section border border-charm-border flex items-center justify-center">
+              <FileText className="w-5 h-5 text-charm-muted" />
             </div>
             <div>
-              <h2 className="text-xl font-semibold text-charm-heading font-display">AI Variance Explanation</h2>
-              <p className="text-sm text-charm-muted mt-1">Let the finance assistant explain the discrepancy.</p>
+              <h2 className="text-lg font-semibold text-charm-heading font-display">Automated Variance Analysis Report</h2>
+              <p className="text-sm text-charm-muted mt-1">Generated explanation of discrepancy</p>
             </div>
           </div>
           
@@ -243,8 +241,8 @@ export function CashPosition() {
 
           {isPending && (
             <div className="flex flex-col items-center justify-center py-12 space-y-4">
-              <div className="w-8 h-8 border-4 border-charm-brand border-t-transparent rounded-full animate-spin shadow-sm" />
-              <span className="text-charm-brand font-medium animate-pulse">Deep analyzing exceptions and records...</span>
+              <div className="w-6 h-6 border-2 border-charm-muted border-t-transparent rounded-full animate-spin" />
+              <span className="text-charm-muted font-medium text-sm">Analyzing records...</span>
             </div>
           )}
 

@@ -61,11 +61,11 @@
   }
 
   .charm-btn-primary {
-    @apply bg-brand-gradient text-white rounded-full shadow-brand font-medium transition-transform hover:-translate-y-0.5 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-charm-brand focus:ring-offset-2 focus:ring-offset-charm-surface;
+    @apply px-4 py-2 text-sm bg-brand-gradient text-white rounded-full shadow-brand font-medium transition-transform hover:-translate-y-0.5 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-charm-brand focus:ring-offset-2 focus:ring-offset-charm-surface;
   }
   
   .charm-btn-secondary {
-    @apply bg-charm-panel border border-charm-border text-charm-heading rounded-full shadow-control font-medium transition-transform hover:-translate-y-0.5 hover:bg-white focus:outline-none focus:ring-2 focus:ring-charm-brand focus:ring-offset-2 focus:ring-offset-charm-surface;
+    @apply px-4 py-2 text-sm bg-charm-panel border border-charm-border text-charm-heading rounded-full shadow-control font-medium transition-transform hover:-translate-y-0.5 hover:bg-white focus:outline-none focus:ring-2 focus:ring-charm-brand focus:ring-offset-2 focus:ring-offset-charm-surface;
   }
 
   .charm-input {

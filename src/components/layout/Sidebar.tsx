@@ -1,6 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { LayoutDashboard, Upload, Activity, List, AlertTriangle, DollarSign, BrainCircuit, History, Settings, BarChart2 } from "lucide-react";
 import { cn } from "../../lib/utils";
+import { motion } from "framer-motion";
 
 export function Sidebar() {
   const location = useLocation();
@@ -26,7 +27,7 @@ export function Sidebar() {
       links: [
         { name: "Cash Position", href: "/cash-position", icon: DollarSign },
         { name: "Reports", href: "/reports", icon: BarChart2 },
-        { name: "Ask LedgerPilot", href: "/ask-ai", icon: BrainCircuit },
+        { name: "Ask LedgerPilotAI", href: "/ask-ai", icon: BrainCircuit },
       ]
     },
     {
@@ -41,9 +42,9 @@ export function Sidebar() {
   return (
     <div className="w-64 border-r border-charm-border bg-charm-band h-screen p-4">
       <div className="flex items-center space-x-2 mb-8">
-        <img src="/logo.jpg" alt="LedgerPilot Logo" className="w-8 h-8 rounded-lg shadow-sm" />
+        <img src="/logo.jpg" alt="LedgerPilotAI Logo" className="w-8 h-8 rounded-lg shadow-sm" />
         <span className="text-xl font-bold text-charm-heading font-display">
-          LedgerPilot
+          LedgerPilotAI
         </span>
       </div>
 
@@ -59,19 +60,24 @@ export function Sidebar() {
                 const isActive = location.pathname.startsWith(link.href) && (link.href !== '/' || location.pathname === '/');
                 
                 return (
-                  <Link
+                  <motion.div 
                     key={link.name}
-                    to={link.href}
-                    className={cn(
-                      "flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors border",
-                      isActive 
-                        ? "bg-white text-charm-brand border-charm-border shadow-sm" 
-                        : "text-charm-muted border-transparent hover:bg-charm-surface hover:text-charm-heading"
-                    )}
+                    whileHover={{ x: 4 }}
+                    whileTap={{ scale: 0.98 }}
                   >
-                    <Icon className="w-5 h-5" />
-                    <span className="font-medium text-sm">{link.name}</span>
-                  </Link>
+                    <Link
+                      to={link.href}
+                      className={cn(
+                        "flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors border",
+                        isActive 
+                          ? "bg-white text-charm-brand border-charm-border shadow-sm" 
+                          : "text-charm-muted border-transparent hover:bg-charm-surface hover:text-charm-heading"
+                      )}
+                    >
+                      <Icon className="w-5 h-5" />
+                      <span className="font-medium text-sm">{link.name}</span>
+                    </Link>
+                  </motion.div>
                 );
               })}
             </div>

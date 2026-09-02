@@ -67,7 +67,7 @@ export default function Header() {
           {/* Logo */}
           <a href="#" className="flex items-center gap-2.5 group">
             <div className="relative">
-              <img src="/logo.jpg" alt="LedgerPilot Logo" className="w-9 h-9 rounded-xl shadow-brand group-hover:shadow-lg transition-shadow duration-300" />
+              <img src="/logo.jpg" alt="LedgerPilotAI Logo" className="w-9 h-9 rounded-xl shadow-brand group-hover:shadow-lg transition-shadow duration-300" />
             </div>
             <span className="text-lg font-bold tracking-tight text-charm-heading font-display">
               Ledger<span className="text-charm-brand">Pilot</span>AI

@@ -3,6 +3,20 @@ import { api } from "../services/api";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { Search, Filter, Calendar } from "lucide-react";
+import { motion } from "framer-motion";
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.05 }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 10 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.3 } }
+};
 
 export function Runs() {
   const navigate = useNavigate();
@@ -73,9 +87,15 @@ export function Runs() {
               <th className="p-4 font-medium text-right">Unresolved Amount</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-charm-border">
+          <motion.tbody 
+            className="divide-y divide-charm-border"
+            variants={containerVariants}
+            initial="hidden"
+            animate="show"
+          >
             {runs.map((run: any) => (
-              <tr 
+              <motion.tr 
+                variants={itemVariants}
                 key={run.id} 
                 onClick={() => navigate(`/runs/${run.id}`)}
                 className="hover:bg-charm-surface/50 transition-colors cursor-pointer"
@@ -103,7 +123,7 @@ export function Runs() {
                 <td className="p-4 text-right font-medium text-charm-heading">
                   {run.unmatchedAmountMinor ? `$${(Number(run.unmatchedAmountMinor) / 100).toFixed(2)}` : "$0.00"}
                 </td>
-              </tr>
+              </motion.tr>
             ))}
             {runs.length === 0 && (
               <tr>
@@ -112,7 +132,7 @@ export function Runs() {
                 </td>
               </tr>
             )}
-          </tbody>
+          </motion.tbody>
         </table>
       </div>
     </div>
